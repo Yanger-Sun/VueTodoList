@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            padding:0;
+            margin:0;
+            text-decoration: none;
+            color:#000;
+            list-style: none;
+            border: 0;
+            outline:none;
+        }
+        .box{
+            width:60%;
+            background:#c4e3f3;
+            margin:100px auto 0;
+            padding-bottom: 50px;
+        }
+        .part1,.part2{
+            width:94%;
+            padding:0 3%;
+        }
+        .addList{
+            width:100%;
+        }
+        .addList input{
+            width:96%;
+            padding: 0 2%;
+            height:30px;
+            line-height: 30px;
+            font-size: 16px;
+            background:#c4e3f3;
+            border-bottom: 1px solid #f1f0f2;
+        }
+        .changeInfo{
+            width:100%;
+        }
+        .changeInfo li{
+            border-bottom: 1px solid #f1f0f2;
+            height:40px;
+            line-height: 40px;
+        }
+        .changeInfo input[type="text"]{
+            width:46%;
+            padding: 0 2%;
+            height:40px;
+            line-height: 40px;
+            font-size: 18px;
+            background:#c4e3f3;
+        }
+        .changeInfo span{
+            padding:0 7px;
+            height:26px;
+            line-height: 26px;
+            margin: 7px 5px 5px 0;
+            float:right;
+            background: #FF0000;
+            border-radius: 5px;
+            color:#fff;
+            cursor: pointer;
+            opacity: 0;
+        }
+        h3{
+            width:100%;
+            font-size:18px;
+            line-height: 50px;
+        }
+        .deleteAll{
+            padding:0 10px;
+            border-radius: 10px;
+            border: 1px solid #c4e3f3;
+            background: #f2aca8;
+            font-size: 15px;
+            float: right;
+            color:#fff;
+            cursor: pointer;
+            height:30px;
+            line-height: 30px;
+            margin-top: 10px;
+        }
+        .deleteAll:hover{
+            background: #f21400;
+        }
+        hr{
+            width:100%;
+            height:1px;
+            background:#fff;
+            margin-bottom: 10px;
+        }
+        .deleteBtn{
+            width:20px;
+            height:20px;
+            margin: 0 20px;
+        }
+        .changeInfo .noExit input[type="text"]{
+            text-decoration: line-through;
+            color:#a6c7da;
+        }
+        .changeInfo .noExit span{
+            opacity: 1;
+        }
+    </style>
+    <script type="text/javascript" src="js/vue.js"></script>
+
+</head>
+<body>
+    <div class="todoBox">
+        <div class="box">
+            <div class="part1">
+                <h3>添加新任务</h3>
+                <hr/>
+                <div class="addList">
+                    <input type="text" name="addInfo" v-on:keyup.13="addList">
+                </div>
+            </div>
+            <div class="part2">
+                <h3>任务列表 <span class="deleteAll" v-on:click="deleteAll">全部删除</span></h3>
+                <hr/>
+                <ul class="changeInfo">
+                    <li v-for="(list,num) in lists" class="status" v-if="list.status==1">
+                        <input type="checkbox" class="deleteBtn" v-on:click="deleteNow(num)">
+                        <input type="text" v-model:value="list.title" v-on:change="changeList(num)" v-on:keyup.13="changeList(num)">
+                        <span class="deleteNow" v-on:click="deleteNowList(num)">删除</span>
+                    </li>
+                    <li v-show="title">暂时没有新的任务</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+    <script>
+        var app = new Vue({
+            el:".todoBox",
+            data:{
+                title:false,
+                lists:[
+                    {
+                        beforeTitle:"吃饭",
+                        title:"吃饭",
+                        status:"1",
+                    },
+                    {
+                        beforeTitle:"睡觉",
+                        title:"睡觉",
+                        status:"1",
+                    }
+                ],
+            },
+            methods:{
+                addList:function(){
+                    var newList = $("input[name=addInfo]").val();
+                    if(newList == ""){
+                        alert("请输入你要添加的任务");
+                        return;
+                    }else{
+                        this.lists.push({title:newList,status:"1",beforeTitle:newList});
+                        $("input[name=addInfo]").val("");
+                        this.title = false;
+                    }
+
+                },
+                changeList:function (num) {
+                    if($(".changeInfo li").eq(num).find("input[type=checkbox]").is(":checked")){
+                        $(".changeInfo li").eq(num).find("input[type=text]").val(this.lists[num].beforeTitle);
+                    }else{
+                        var changeNew = $(".changeInfo li").eq(num).find("input[type=text]").val();
+                        this.lists[num].title = changeNew;
+                        this.lists[num].beforeTitle = changeNew;
+                    }
+                },
+                deleteNow:function (num) {
+                    if($(".changeInfo li").eq(num).find("input[type=checkbox]").is(":checked")){
+                        $(".changeInfo li").eq(num).addClass("noExit");
+                    }else{
+                        $(".changeInfo li").eq(num).removeClass("noExit");
+                    }
+                },
+                deleteNowList:function (num) {
+                    var answer = confirm("确定删除？");
+                    if(answer){
+                        this.lists[num].status = 0;
+                        var count = 0;
+                        $(this.lists).each(function(i,v){
+                            if($(v).status == 1){
+                                count+=1;
+                            }
+                        })
+                        if(count == 0){
+                            this.title = true;
+                        }else{
+                            this.title = false;
+                        }
+                    }
+
+                },
+                deleteAll:function () {
+                    var answer = confirm("确定全部删除吗？");
+                    if(answer){
+                        for(var i =0;i<this.lists.length;i++){
+                            this.lists[i].status = 0;
+                        }
+                        var count = 0;
+                        $(this.lists).each(function(i,v){
+                            if($(v).status == 1){
+                                count+=1;
+                            }
+                        })
+                        if(count == 0){
+                            this.title = true;
+                        }else{
+                            this.title = false;
+                        }
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+</html>
